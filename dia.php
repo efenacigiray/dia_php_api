@@ -5,20 +5,20 @@ class Dia {
 	const DIA_SCF = '/api/v3/scf/json';
 
 	private static $session_token = '';
+	private static $company_code = '';
 
-	private $list_limit = 100;
 	private $disconnect_same_user = 'False';
 	private $language = 'tr';
 
-	public function __construct($disconnect_same_user = 'False', $language = 'tr', $list_limit = 100) { 
+	public function __construct($disconnect_same_user = 'False', $language = 'tr') { 
 		$this->disconnect_same_user = $disconnect_same_user;
 		$this->language = $language;
-		$this->list_limit = $list_limit;
 	}
 
-	public function login($username, $password) {
+	public function login($username, $password, $company_code = 0) {
 		$request = new stdClass();
 		$request->login = new stdClass();
+		$this->company_code = $company_code;
 
 		$request->login->username = $username;
 		$request->login->password = $password;
@@ -31,18 +31,38 @@ class Dia {
 		$response = $this->curl_api($request_url, $request_body);
 
 		if ($response && isset($response['msg']) && strlen($response['msg']) == 32) {
-			$session_token = $response['msg'];
+			$this->session_token = $response['msg'];
+			echo 'Succesfull Login: ' . $this->session_token . PHP_EOL;
 			return true;
 		} else {
 			return false;
 		}
 	}
 
-	public function list_products($limit = 0, $offset = 0) {
+	public function list_products($period, $filters = array(), $list_limit = 100, $offset = 0) {
+		$request = new stdClass();
+		$request->scf_stokkart_listele = new stdClass();
+		$request->scf_stokkart_listele->limit = $list_limit;
+		$request->scf_stokkart_listele->offset = $offset;
 
+		$request->scf_stokkart_listele->donem_kodu = $period;
+		$request->scf_stokkart_listele->session_id = $this->session_token;
+		$request->scf_stokkart_listele->firma_kodu = $this->company_code;
+
+		$request_body = json_encode($request);
+		$request_url = Dia::DIA_API . Dia::DIA_SCF;
+
+		$response = $this->curl_api($request_url, $request_body);
+
+		if ($response['code'] == 200) {
+			$response = $response['result'];
+		}
+
+		return $response;
 	}
 
 	public function curl_api($url, $body, $options = array()) {
+		echo $body . PHP_EOL;
 		$curl = curl_init();
 
 		curl_setopt($curl, CURLOPT_URL, $url);
