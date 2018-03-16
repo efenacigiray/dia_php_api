@@ -4,8 +4,8 @@ class Dia {
 	const DIA_SIS = '/api/v3/sis/json';
 	const DIA_SCF = '/api/v3/scf/json';
 
-	private static $session_token = '';
-	private static $company_code = '';
+	private $session_token = '';
+	private $company_code = '';
 
 	private $disconnect_same_user = 'False';
 	private $language = 'tr';
