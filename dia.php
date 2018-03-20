@@ -38,7 +38,6 @@ class Dia {
 
 		if ($response && isset($response['msg']) && strlen($response['msg']) == 32) {
 			$this->session_token = $response['msg'];
-			echo 'Succesfull Login: ' . $this->session_token . PHP_EOL;
 			return true;
 		} else {
 			return false;
@@ -64,14 +63,13 @@ class Dia {
 		if ($response['code'] == 200) {
 			$response = $response['result'];
 		} else {
-			var_dump($response);
 			$response = array();
 		}
 
 		return $response;
 	}
 
-	public function curl_api($url, $body, $options = array()) {
+	private function curl_api($url, $body, $options = array()) {
 		$curl = curl_init();
 
 		curl_setopt($curl, CURLOPT_URL, $url);
