@@ -42,6 +42,13 @@ if ( !isset($dia_api_settings['module_dia_status']) || !$dia_api_settings['modul
 	exit();
 }
 
+$dia = new Dia($dia_api_settings, 'False', 'tr');
+
+if (!$dia->login()) {
+	write_log("Unable to login!", $log_file);
+	exit();
+}
+
 //get manufacturers
 $query = $mysqli->prepare('SELECT * FROM manufacturer');
 if (!$query->execute()) {
@@ -54,13 +61,6 @@ $manufacturers = array();
 
 while ($row = $result->fetch_assoc()) {
 	$manufacturers[$row['manufacturer_id']] = $row['name'];
-}
-
-$dia = new Dia($dia_api_settings, 'False', 'tr');
-
-if (!$dia->login()) {
-	write_log("Unable to login!", $log_file);
-	exit();
 }
 
 write_log('Logged in successfully in: ' . (microtime(true) - $start), $log_file);
@@ -127,7 +127,7 @@ foreach ($products as $product) {
 		$stock_status = $config['opencart_stock_status_out_of_stock'];
 
 		//item does not exist on storage
-		$query = $mysqli->prepare('INSERT INTO product SET quantity = ?, price = ?, sku = ?, model = ?, mpn = ?, image = ?, date_available = NOW(), upc = "", ean = "", jan = "", isbn = "", tax_class_id = ?, date_added = NOW(), date_modified = NOW(), manufacturer_id = ?, stock_status_id = ?, location = ""');
+		$query = $mysqli->prepare('INSERT INTO product SET quantity = ?, price = ?, sku = ?, model = ?, mpn = ?, image = ?, date_available = NOW(), upc = "", ean = "", jan = "", isbn = "", tax_class_id = ?, date_added = NOW(), date_modified = NOW(), manufacturer_id = ?, stock_status_id = ?, location = "", store = 1');
 		$query->bind_param('idssssiii', $product['fiili_stok'], $product['fiyat1'], $product['stokkartkodu'], $product['stokkartkodu'], $product['_key'], $image_path, $config['opencart_tax_class'], $manufacturer_id, $stock_status);
 		
 		if (!$query->execute()) {
@@ -155,7 +155,6 @@ foreach ($products as $product) {
 }
 
 $mysqli->close();
-
 
 function write_log($line, $log_file) {
 	file_put_contents($log_file, $line . PHP_EOL, FILE_APPEND);
